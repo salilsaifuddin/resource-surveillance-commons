@@ -114,3 +114,64 @@ SELECT
     AVG((julianday('now') - julianday(birth_date)) / 365.25) AS average_age
 FROM
     patient_birth_dates;
+
+
+-- Extracts Encounter resources from FHIR bundles
+-- Provides details about each Encounter resources.
+DROP VIEW IF EXISTS fhir_v4_bundle_resource_encounter;
+CREATE VIEW fhir_v4_bundle_resource_encounter AS
+   SELECT 
+json_extract(value, '$.id') AS id,
+  json_extract(value, '$.meta.lastUpdated') AS lastUpdated,
+  json_extract(value, '$.type[0].coding.code') AS type_code,
+  json_extract(value, '$.type[0].coding.system') AS type_system,
+  json_extract(value, '$.type[0].coding.display') AS type_display,
+  json_extract(value, '$.class.code') AS class_code,
+  json_extract(value, '$.class.system') AS class_system,
+  json_extract(value, '$.class.display') AS class_display,
+  json_extract(value, '$.period.start') AS period_start,
+  json_extract(value, '$.period.end') AS period_end,
+  json_extract(value, '$.status') AS status,
+  json_extract(value, '$.subject.display') AS subject_display,
+  json_extract(value, '$.subject.reference') AS subject_reference,
+  json_extract(value, '$.location[0].location') AS location,
+  json_extract(value, '$.diagnosis[0].reference') AS diagnosis_reference,
+  json_extract(value, '$.extension[0].lineage meta data[0].url') AS extension_url,
+  json_extract(value, '$.extension[0].lineage meta data[0].valueString') AS extension_valueString,
+  json_extract(value, '$.identifier[0].value') AS identifier_value,
+  json_extract(value, '$.reasonCode[0].coding.code') AS reasonCode_code,
+  json_extract(value, '$.reasonCode[0].coding.system') AS reasonCode_system,
+  json_extract(value, '$.serviceType.coding[0].code') AS serviceType_code,
+  json_extract(value, '$.serviceType.coding[0].system') AS serviceType_system,
+  json_extract(value, '$.hospitalization.admitSource.coding.code') AS admitSource_code,
+  json_extract(value, '$.hospitalization.dischargeDisposition.coding[0].code') AS dischargeDisposition_code,
+  json_extract(value, '$.reasonReference[0].reference') AS reasonReference_reference,
+  json_extract(value, '$.resourceType') AS resourceType
+FROM 
+  json_each(( SELECT resource_content FROM fhir_v4_bundle_resource WHERE resource_type  = 'Encounter' ))
+  WHERE KEY='resource'
+  ;
+ 
+ 
+  -- Extracts Condition resources from FHIR bundles
+-- Provides details about each Condition resources.
+DROP VIEW IF EXISTS fhir_v4_bundle_resource_condition;
+CREATE VIEW fhir_v4_bundle_resource_condition AS
+  SELECT
+    json_extract(value, '$.id') AS id,
+    json_extract(value, '$.code.coding[0].code') AS code,
+    json_extract(value, '$.code.coding[0].system') AS code_system,
+    json_extract(value, '$.code.coding[0].display') AS code_display,
+    json_extract(value, '$.meta.lastUpdated') AS lastUpdated,
+    json_extract(value, '$.subject.display') AS subject_display,
+    json_extract(value, '$.subject.reference') AS subject_reference,
+    json_extract(value, '$.encounter.display') AS encounter_display,
+    json_extract(value, '$.encounter.reference') AS encounter_reference,
+    json_extract(value, '$.onsetDateTime') AS onsetDateTime,
+    json_extract(value, '$.Slices for category.category:us-core.coding[0].code') AS category_code,
+    json_extract(value, '$.Slices for category.category:us-core.coding[0].system') AS category_system
+FROM
+     json_each(( SELECT resource_content FROM fhir_v4_bundle_resource WHERE resource_type  = 'Condition' ))
+  WHERE KEY='resource';
+  
+ 
