@@ -174,4 +174,26 @@ FROM
      json_each(( SELECT resource_content FROM fhir_v4_bundle_resource WHERE resource_type  = 'Condition' ))
   WHERE KEY='resource';
   
- 
+ DROP VIEW IF EXISTS fhir_v4_bundle_resource_ServiceRequest;
+CREATE VIEW fhir_v4_bundle_resource_ServiceRequest AS
+ SELECT
+    json_extract(value, '$.id') AS id,
+    json_extract(value, '$.meta.lastUpdated') AS lastUpdated,
+    json_extract(value, '$.code.coding[0].code') AS code,
+    json_extract(value, '$.code.coding[0].system') AS code_system,
+    json_extract(value, '$.code.coding[0].display') AS code_display,
+    json_extract(value, '$.category.coding[0].code') AS category_code,
+    json_extract(value, '$.category.coding[0].system') AS category_code_system,
+    json_extract(value, '$.category.coding[0].display') AS category_code_display,    
+    json_extract(value, '$.intent') AS intent,
+    json_extract(value, '$.status') AS status,
+    json_extract(value, '$.subject.display') AS subject_display,
+    json_extract(value, '$.subject.reference') AS subject_reference,
+    json_extract(value, '$.encounter.display') AS encounter_display,
+    json_extract(value, '$.encounter.reference') AS encounter_reference,
+    json_extract(value, '$.occurrencePeriod.start') AS occurrencePeriod_start,
+    json_extract(value, '$.occurrencePeriod.end') AS occurrencePeriod_end,
+    json_extract(value, '$.occurrenceDateTime') AS occurrenceDateTime
+FROM
+     json_each(( SELECT resource_content FROM fhir_v4_bundle_resource WHERE resource_type  = 'ServiceRequest' ))
+  WHERE KEY='resource';
